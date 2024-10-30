@@ -1,31 +1,47 @@
+// @ts-check
+
 import { books, authors, genres, BOOKS_PER_PAGE } from './data.js'
 
 let page = 1;
 let matches = books
 
-const starting = document.createDocumentFragment()
+class Book {
+    /**
+     * Create a Book instance.
+     * @param {string} id
+     * @param {string} title
+     * @param {string} author
+     * @param {string} image
+     * @param {string} description
+     * @param {string[]} genres
+     * @param {number} published
+     */
+    constructor(id, title, author, image, description, genres, published) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.image = image;
+        this.description = description
+        this.genres = genres;
+        this.published = published;
+    }
+    renderPreview() {
+        const element = document.createElement('button');
+        element.classList.add('preview');
+        element.setAttribute('data-preview', this.id)
 
-for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
-    const element = document.createElement('button')
-    element.classList = 'preview'
-    element.setAttribute('data-preview', id)
-
-    element.innerHTML = `
-        <img
-            class="preview__image"
-            src="${image}"
-        />
-        
-        <div class="preview__info">
-            <h3 class="preview__title">${title}</h3>
-            <div class="preview__author">${authors[author]}</div>
-        </div>
-    `
-
-    starting.appendChild(element)
+        element.innerHTML = `
+            <img class="preview__image" src="${this.image}" />
+            <div class="preview__info">
+            <h3 class="preview__title">${this.title}</h3>
+            <div class="preview__author">${authors[this.author]}</div>
+            </div>
+        `;
+        return element;
+    }
 }
 
-document.querySelector('[data-list-items]').appendChild(starting)
+
 
 const genreHtml = document.createDocumentFragment()
 const firstGenreElement = document.createElement('option')
