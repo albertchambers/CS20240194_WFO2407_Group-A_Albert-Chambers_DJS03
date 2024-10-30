@@ -96,15 +96,24 @@ function renderOptions(selectElement, data, firstOptionText) {
 renderOptions('[data-search-genres]', genres, 'All Genres');
 renderOptions('[data-search-authors]', authors, 'All Authors');
 
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.querySelector('[data-settings-theme]').value = 'night'
-    document.documentElement.style.setProperty('--color-dark', '255, 255, 255');
-    document.documentElement.style.setProperty('--color-light', '10, 10, 20');
+const themeElement = document.querySelector('[data-settings-theme]');
+
+// Check if the theme element exists and is a select element
+if (themeElement && themeElement instanceof HTMLSelectElement) {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        themeElement.value = 'night';
+        document.documentElement.style.setProperty('--color-dark', '255, 255, 255');
+        document.documentElement.style.setProperty('--color-light', '10, 10, 20');
+    } else {
+        themeElement.value = 'day';
+        document.documentElement.style.setProperty('--color-dark', '10, 10, 20');
+        document.documentElement.style.setProperty('--color-light', '255, 255, 255');
+    }
 } else {
-    document.querySelector('[data-settings-theme]').value = 'day'
-    document.documentElement.style.setProperty('--color-dark', '10, 10, 20');
-    document.documentElement.style.setProperty('--color-light', '255, 255, 255');
+    console.error('Theme element not found or is not a select element.');
 }
+
+
 
 document.querySelector('[data-list-button]').innerText = `Show more (${books.length - BOOKS_PER_PAGE})`
 document.querySelector('[data-list-button]').disabled = (matches.length - (page * BOOKS_PER_PAGE)) > 0
