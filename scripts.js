@@ -1,9 +1,9 @@
 // @ts-check
 
-import { books, authors, genres, BOOKS_PER_PAGE } from './data.js'
+import { books, authors, genres, BOOKS_PER_PAGE } from './data.js';
 
 let page = 1;
-let matches = books
+let matches = books;
 
 class Book {
     /**
@@ -21,24 +21,25 @@ class Book {
         this.title = title;
         this.author = author;
         this.image = image;
-        this.description = description
+        this.description = description;
         this.genres = genres;
         this.published = published;
     }
+
     renderPreview() {
         const element = document.createElement('button');
         element.classList.add('preview');
-        element.setAttribute('data-preview', this.id)
+        element.setAttribute('data-preview', this.id);
         element.innerHTML = `
             <img class="preview__image" src="${this.image}" />
             <div class="preview__info">
-            <h3 class="preview__title">${this.title}</h3>
-            <div class="preview__author">${authors[this.author]}</div>
+                <h3 class="preview__title">${this.title}</h3>
+                <div class="preview__author">${authors[this.author]}</div>
             </div>
         `;
         return element;
-    };
-};
+    }
+}
 
 /**
  * Render a list of books in container.
@@ -53,7 +54,7 @@ function renderBooks(booksToRender, container, page, booksPerPage) {
     const end = start + booksPerPage;
     const booksSlice = booksToRender.slice(start, end);
 
-    for (const book of booksSlice) {
+    booksSlice.forEach(book => {
         const bookInstance = new Book(
             book.id,
             book.title,
@@ -64,21 +65,19 @@ function renderBooks(booksToRender, container, page, booksPerPage) {
             book.published
         );
         fragment.appendChild(bookInstance.renderPreview());
-    }
+    });
 
     const containerElement = document.querySelector(container);
-    if (containerElement) {
-        containerElement.appendChild(fragment);
-    }
+    containerElement?.appendChild(fragment);
 }
 
-renderBooks(books, '[data-list-items]', 1, BOOKS_PER_PAGE);
+renderBooks(books, '[data-list-items]', page, BOOKS_PER_PAGE);
 
 /**
  * Dynamic filter options (dropdown)
+ * @param {string} selectElement
  * @param {object} data
  * @param {string} firstOptionText
- * @param {string} selectElement
  */
 function renderOptions(selectElement, data, firstOptionText) {
     const fragment = document.createDocumentFragment();
@@ -87,95 +86,93 @@ function renderOptions(selectElement, data, firstOptionText) {
     firstOption.innerText = firstOptionText;
     fragment.appendChild(firstOption);
 
-    for (const [id, name] of Object.entries(data)) {
+    Object.entries(data).forEach(([id, name]) => {
         const option = document.createElement('option');
         option.value = id;
         option.innerText = name;
         fragment.appendChild(option);
-    }
+    });
 
     const targetElement = document.querySelector(selectElement);
-
-    // Null check before appending the fragment
-    if (targetElement) {
-        targetElement.appendChild(fragment);
-    } else {
-        console.error(`Element with selector "${selectElement}" not found.`);
-    }
+    targetElement?.appendChild(fragment);
 }
 
 renderOptions('[data-search-genres]', genres, 'All Genres');
 renderOptions('[data-search-authors]', authors, 'All Authors');
 
 const themeElement = document.querySelector('[data-settings-theme]');
-
-// Check if the theme element exists and is a select element
-if (themeElement && themeElement instanceof HTMLSelectElement) {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        themeElement.value = 'night';
-        document.documentElement.style.setProperty('--color-dark', '255, 255, 255');
-        document.documentElement.style.setProperty('--color-light', '10, 10, 20');
-    } else {
-        themeElement.value = 'day';
-        document.documentElement.style.setProperty('--color-dark', '10, 10, 20');
-        document.documentElement.style.setProperty('--color-light', '255, 255, 255');
-    }
+if (themeElement instanceof HTMLSelectElement) {
+    const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(isDarkMode ? 'night' : 'day');
 } else {
     console.error('Theme element not found or is not a select element.');
+}
+
+/**
+ * Set theme based on preference.
+ * @param {string} theme
+ */
+function setTheme(theme) {
+    const darkColor = theme === 'night' ? '255, 255, 255' : '10, 10, 20';
+    const lightColor = theme === 'night' ? '10, 10, 20' : '255, 255, 255';
+
+    document.documentElement.style.setProperty('--color-dark', darkColor);
+    document.documentElement.style.setProperty('--color-light', lightColor);
 }
 
 // Handle the "Show more" button state
 const listButton = document.querySelector('[data-list-button]');
 if (listButton instanceof HTMLButtonElement) {
-    listButton.innerText = `Show more (${books.length - BOOKS_PER_PAGE})`;
-    listButton.disabled = (matches.length - (page * BOOKS_PER_PAGE)) <= 0;
+    updateListButton();
+}
 
-    listButton.innerHTML = `
-        <span>Show more</span>
-        <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
-    `;
+function updateListButton() {
+    const remainingBooks = matches.length - (page * BOOKS_PER_PAGE);
+    listButton.innerText = `Show more (${remainingBooks})`;
+    listButton.disabled = remainingBooks <= 0;
 }
 
 // Event Listeners (Optional Chaining)
-document.querySelector('[data-search-cancel]')?.addEventListener('click', () => {
+const searchCancel = document.querySelector('[data-search-cancel]');
+const settingsCancel = document.querySelector('[data-settings-cancel]');
+const headerSearch = document.querySelector('[data-header-search]');
+const headerSettings = document.querySelector('[data-header-settings]');
+const listClose = document.querySelector('[data-list-close]');
+const settingsForm = document.querySelector('[data-settings-form]');
+const searchForm = document.querySelector('[data-search-form]');
+const listItems = document.querySelector('[data-list-items]');
+
+searchCancel?.addEventListener('click', () => {
     document.querySelector('[data-search-overlay]')?.setAttribute('open', 'false');
 });
 
-document.querySelector('[data-settings-cancel]')?.addEventListener('click', () => {
+settingsCancel?.addEventListener('click', () => {
     document.querySelector('[data-settings-overlay]')?.setAttribute('open', 'false');
 });
 
-document.querySelector('[data-header-search]')?.addEventListener('click', () => {
+headerSearch?.addEventListener('click', () => {
     document.querySelector('[data-search-overlay]')?.setAttribute('open', 'true');
     document.querySelector('[data-search-title]')?.focus();
 });
 
-document.querySelector('[data-header-settings]')?.addEventListener('click', () => {
+headerSettings?.addEventListener('click', () => {
     document.querySelector('[data-settings-overlay]')?.setAttribute('open', 'true');
 });
 
-document.querySelector('[data-list-close]')?.addEventListener('click', () => {
+listClose?.addEventListener('click', () => {
     document.querySelector('[data-list-active]')?.setAttribute('open', 'false');
 });
 
-document.querySelector('[data-settings-form]')?.addEventListener('submit', (event) => {
+settingsForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const { theme } = Object.fromEntries(formData);
-
-    if (theme === 'night') {
-        document.documentElement.style.setProperty('--color-dark', '255, 255, 255');
-        document.documentElement.style.setProperty('--color-light', '10, 10, 20');
-    } else {
-        document.documentElement.style.setProperty('--color-dark', '10, 10, 20');
-        document.documentElement.style.setProperty('--color-light', '255, 255, 255');
-    }
-
+    setTheme(theme);
     document.querySelector('[data-settings-overlay]')?.setAttribute('open', 'false');
 });
 
 // Handling for Search Form
-document.querySelector('[data-search-form]')?.addEventListener('submit', (event) => {
+searchForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const filters = Object.fromEntries(formData);
@@ -190,115 +187,59 @@ document.querySelector('[data-search-form]')?.addEventListener('submit', (event)
 
     page = 1;
     matches = result;
-
     const listMessage = document.querySelector('[data-list-message]');
+    
     if (result.length < 1) {
         listMessage?.classList.add('list__message_show');
     } else {
         listMessage?.classList.remove('list__message_show');
     }
 
-    const listItems = document.querySelector('[data-list-items]');
-    if (listItems) {
-        listItems.innerHTML = '';
-        const newItems = document.createDocumentFragment();
-
-        for (const { author, id, image, title } of result.slice(0, BOOKS_PER_PAGE)) {
-            const element = document.createElement('button');
-            element.classList.add('preview');
-            element.setAttribute('data-preview', id);
-            element.innerHTML = `
-                <img class="preview__image" src="${image}" />
-                <div class="preview__info">
-                    <h3 class="preview__title">${title}</h3>
-                    <div class="preview__author">${authors[author]}</div>
-                </div>
-            `;
-            newItems.appendChild(element);
-        }
-
-        listItems.appendChild(newItems);
-    }
-
-    document.querySelector('[data-list-button]')?.setAttribute('disabled', matches.length - (page * BOOKS_PER_PAGE) <= 0);
+    renderBooks(result, '[data-list-items]', page, BOOKS_PER_PAGE);
+    updateListButton();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelector('[data-search-overlay]')?.setAttribute('open', 'false');
 });
 
 // Pagination Handler
-document.querySelector('[data-list-button]')?.addEventListener('click', () => {
+listButton?.addEventListener('click', () => {
     const fragment = document.createDocumentFragment();
-    for (const { author, id, image, title } of matches.slice(page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE)) {
-        const element = document.createElement('button');
-        element.classList.add('preview');
-        element.setAttribute('data-preview', id);
-        element.innerHTML = `
+    const nextBooks = matches.slice(page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE);
+
+    nextBooks.forEach(({ author, id, image, title }) => {
+        const bookButton = document.createElement('button');
+        bookButton.classList.add('preview');
+        bookButton.setAttribute('data-preview', id);
+        bookButton.innerHTML = `
             <img class="preview__image" src="${image}" />
             <div class="preview__info">
                 <h3 class="preview__title">${title}</h3>
                 <div class="preview__author">${authors[author]}</div>
             </div>
         `;
-        fragment.appendChild(element);
-    }
+        fragment.appendChild(bookButton);
+    });
 
-    document.querySelector('[data-list-items]')?.appendChild(fragment);
+    listItems?.appendChild(fragment);
     page += 1;
+    updateListButton();
 });
 
+// List Item Click Handler
+listItems?.addEventListener('click', (event) => {
+    const target = event.target.closest('[data-preview]');
+    if (target) {
+        const active = books.find(book => book.id === target.dataset.preview);
+        const listActive = document.querySelector('[data-list-active]');
+        const titleElement = listActive?.querySelector('[data-list-title]');
+        const imageElement = listActive?.querySelector('[data-list-image]');
+        const descriptionElement = listActive?.querySelector('[data-list-description]');
 
-document.querySelector('[data-list-button]').addEventListener('click', () => {
-    const fragment = document.createDocumentFragment()
-
-    for (const { author, id, image, title } of matches.slice(page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE)) {
-        const element = document.createElement('button')
-        element.classList = 'preview'
-        element.setAttribute('data-preview', id)
-    
-        element.innerHTML = `
-            <img
-                class="preview__image"
-                src="${image}"
-            />
-            
-            <div class="preview__info">
-                <h3 class="preview__title">${title}</h3>
-                <div class="preview__author">${authors[author]}</div>
-            </div>
-        `
-
-        fragment.appendChild(element)
-    }
-
-    document.querySelector('[data-list-items]').appendChild(fragment)
-    page += 1
-})
-
-document.querySelector('[data-list-items]').addEventListener('click', (event) => {
-    const pathArray = Array.from(event.path || event.composedPath())
-    let active = null
-
-    for (const node of pathArray) {
-        if (active) break
-
-        if (node?.dataset?.preview) {
-            let result = null
-    
-            for (const singleBook of books) {
-                if (result) break;
-                if (singleBook.id === node?.dataset?.preview) result = singleBook
-            } 
-        
-            active = result
+        if (listActive && titleElement && imageElement && descriptionElement) {
+            listActive.setAttribute('open', 'true');
+            titleElement.innerText = active.title;
+            imageElement.src = active.image;
+            descriptionElement.innerText = active.description;
         }
     }
-    
-    if (active) {
-        document.querySelector('[data-list-active]').open = true
-        document.querySelector('[data-list-blur]').src = active.image
-        document.querySelector('[data-list-image]').src = active.image
-        document.querySelector('[data-list-title]').innerText = active.title
-        document.querySelector('[data-list-subtitle]').innerText = `${authors[active.author]} (${new Date(active.published).getFullYear()})`
-        document.querySelector('[data-list-description]').innerText = active.description
-    }
-})
+});
