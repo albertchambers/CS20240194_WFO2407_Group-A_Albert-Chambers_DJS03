@@ -29,7 +29,6 @@ class Book {
         const element = document.createElement('button');
         element.classList.add('preview');
         element.setAttribute('data-preview', this.id)
-
         element.innerHTML = `
             <img class="preview__image" src="${this.image}" />
             <div class="preview__info">
@@ -38,10 +37,31 @@ class Book {
             </div>
         `;
         return element;
-    }
-}
+    };
+};
 
+function renderBooks(booksToRender, container, page, booksPerPage) {
+    const fragment = document.createDocumentFragment();
+    const start = (page - 1) * booksPerPage;
+    const end = start + booksPerPage;
+    const booksSlice = booksToRender.slice(start, end);
 
+    for (const book of booksSlice) {
+        const bookInstance = new Book(
+            book.id,
+            book.title,
+            book.author,
+            book.image,
+            book.description,
+            book.genres,
+            book.published);
+        fragment.appendChild(bookInstance.renderPreview());
+    };
+
+    document.querySelector(container).appendChild(fragment)
+};
+
+renderBooks(books, '[data-list-items]', 1, BOOKS_PER_PAGE);
 
 const genreHtml = document.createDocumentFragment()
 const firstGenreElement = document.createElement('option')
