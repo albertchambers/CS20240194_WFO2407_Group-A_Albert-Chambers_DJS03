@@ -40,6 +40,13 @@ class Book {
     };
 };
 
+/**
+ * Render a list of books in container.
+ * @param {Array<object>} booksToRender
+ * @param {string} container
+ * @param {number} page
+ * @param {number} booksPerPage
+ */
 function renderBooks(booksToRender, container, page, booksPerPage) {
     const fragment = document.createDocumentFragment();
     const start = (page - 1) * booksPerPage;
@@ -54,12 +61,16 @@ function renderBooks(booksToRender, container, page, booksPerPage) {
             book.image,
             book.description,
             book.genres,
-            book.published);
+            book.published
+        );
         fragment.appendChild(bookInstance.renderPreview());
-    };
+    }
 
-    document.querySelector(container).appendChild(fragment)
-};
+    const containerElement = document.querySelector(container);
+    if (containerElement) {
+        containerElement.appendChild(fragment);
+    }
+}
 
 renderBooks(books, '[data-list-items]', 1, BOOKS_PER_PAGE);
 
@@ -113,15 +124,17 @@ if (themeElement && themeElement instanceof HTMLSelectElement) {
     console.error('Theme element not found or is not a select element.');
 }
 
+// Handle the "Show more" button state
+const listButton = document.querySelector('[data-list-button]');
+if (listButton instanceof HTMLButtonElement) {
+    listButton.innerText = `Show more (${books.length - BOOKS_PER_PAGE})`;
+    listButton.disabled = (matches.length - (page * BOOKS_PER_PAGE)) <= 0;
 
-
-document.querySelector('[data-list-button]').innerText = `Show more (${books.length - BOOKS_PER_PAGE})`
-document.querySelector('[data-list-button]').disabled = (matches.length - (page * BOOKS_PER_PAGE)) > 0
-
-document.querySelector('[data-list-button]').innerHTML = `
-    <span>Show more</span>
-    <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
-`
+    listButton.innerHTML = `
+        <span>Show more</span>
+        <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
+    `;
+}
 
 document.querySelector('[data-search-cancel]').addEventListener('click', () => {
     document.querySelector('[data-search-overlay]').open = false
