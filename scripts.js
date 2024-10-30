@@ -63,35 +63,38 @@ function renderBooks(booksToRender, container, page, booksPerPage) {
 
 renderBooks(books, '[data-list-items]', 1, BOOKS_PER_PAGE);
 
-const genreHtml = document.createDocumentFragment()
-const firstGenreElement = document.createElement('option')
-firstGenreElement.value = 'any'
-firstGenreElement.innerText = 'All Genres'
-genreHtml.appendChild(firstGenreElement)
+/**
+ * Dynamic filter options (dropdown)
+ * @param {object} data
+ * @param {string} firstOptionText
+ * @param {string} selectElement
+ */
+function renderOptions(selectElement, data, firstOptionText) {
+    const fragment = document.createDocumentFragment();
+    const firstOption = document.createElement('option');
+    firstOption.value = 'any';
+    firstOption.innerText = firstOptionText;
+    fragment.appendChild(firstOption);
 
-for (const [id, name] of Object.entries(genres)) {
-    const element = document.createElement('option')
-    element.value = id
-    element.innerText = name
-    genreHtml.appendChild(element)
+    for (const [id, name] of Object.entries(data)) {
+        const option = document.createElement('option');
+        option.value = id;
+        option.innerText = name;
+        fragment.appendChild(option);
+    }
+
+    const targetElement = document.querySelector(selectElement);
+
+    // Null check before appending the fragment
+    if (targetElement) {
+        targetElement.appendChild(fragment);
+    } else {
+        console.error(`Element with selector "${selectElement}" not found.`);
+    }
 }
 
-document.querySelector('[data-search-genres]').appendChild(genreHtml)
-
-const authorsHtml = document.createDocumentFragment()
-const firstAuthorElement = document.createElement('option')
-firstAuthorElement.value = 'any'
-firstAuthorElement.innerText = 'All Authors'
-authorsHtml.appendChild(firstAuthorElement)
-
-for (const [id, name] of Object.entries(authors)) {
-    const element = document.createElement('option')
-    element.value = id
-    element.innerText = name
-    authorsHtml.appendChild(element)
-}
-
-document.querySelector('[data-search-authors]').appendChild(authorsHtml)
+renderOptions('[data-search-genres]', genres, 'All Genres');
+renderOptions('[data-search-authors]', authors, 'All Authors');
 
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.querySelector('[data-settings-theme]').value = 'night'
